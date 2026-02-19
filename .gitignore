@@ -1,0 +1,36 @@
+## .NET
+bin/
+obj/
+*.user
+*.suo
+*.userprefs
+*.csproj.user
+*.sln.docstates
+
+## IDE
+.vs/
+.idea/
+*.swp
+*~
+
+## Build
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+build/
+publish/
+
+## NuGet
+*.nupkg
+**/packages/*
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+## User secrets
+secrets.json
+
+## OS
+.DS_Store
+Thumbs.db
