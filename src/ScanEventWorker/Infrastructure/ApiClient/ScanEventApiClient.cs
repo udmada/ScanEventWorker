@@ -4,7 +4,9 @@ using ScanEventWorker.Domain;
 
 namespace ScanEventWorker.Infrastructure.ApiClient;
 
-public sealed class ScanEventApiClient(HttpClient httpClient) : IScanEventApiClient
+public sealed class ScanEventApiClient(
+    HttpClient httpClient,
+    ILogger<ScanEventApiClient> logger) : IScanEventApiClient
 {
     public async Task<Result<IReadOnlyList<ScanEvent>>> GetScanEventsAsync(
         long fromEventId, int limit, CancellationToken ct)
@@ -24,8 +26,15 @@ public sealed class ScanEventApiClient(HttpClient httpClient) : IScanEventApiCli
             {
                 var parsed = MapToDomain(dto);
                 if (parsed.IsSuccess)
+                {
                     events.Add(parsed.Value);
-                // Malformed events are skipped — caller logs via Result pattern
+                }
+                else
+                {
+                    logger.LogWarning(
+                        "Skipping malformed scan event: EventId={EventId}, ParcelId={ParcelId}, Reason={Reason}",
+                        dto.EventId, dto.ParcelId, parsed.Error);
+                }
             }
 
             return Result<IReadOnlyList<ScanEvent>>.Success(events);
