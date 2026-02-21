@@ -3,6 +3,7 @@ using Microsoft.Data.SqlClient;
 
 namespace ScanEventWorker.Infrastructure.Persistence;
 
+[DapperAot]
 public sealed class DatabaseInitializer(string connectionString, ILogger<DatabaseInitializer> logger)
 {
     public async Task InitializeAsync(CancellationToken ct)
@@ -12,7 +13,7 @@ public sealed class DatabaseInitializer(string connectionString, ILogger<Databas
         await using var connection = new SqlConnection(connectionString);
         await connection.OpenAsync(ct);
 
-        await connection.ExecuteAsync("""
+        await connection.ExecuteAsync(new CommandDefinition("""
             IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'ProcessingState')
             BEGIN
                 CREATE TABLE ProcessingState (
@@ -23,9 +24,9 @@ public sealed class DatabaseInitializer(string connectionString, ILogger<Databas
                 );
                 INSERT INTO ProcessingState (Id, LastEventId) VALUES (1, 1);
             END
-            """);
+            """, cancellationToken: ct));
 
-        await connection.ExecuteAsync("""
+        await connection.ExecuteAsync(new CommandDefinition("""
             IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'ParcelSummary')
             BEGIN
                 CREATE TABLE ParcelSummary (
@@ -39,7 +40,7 @@ public sealed class DatabaseInitializer(string connectionString, ILogger<Databas
                     DeliveredAtUtc DATETIMEOFFSET NULL
                 );
             END
-            """);
+            """, cancellationToken: ct));
 
         logger.LogInformation("Database schema initialized");
     }
