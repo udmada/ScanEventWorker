@@ -20,7 +20,10 @@ builder.Services.Configure<ScanEventApiOptions>(
 // Infrastructure — Persistence
 builder.Services.AddSingleton(sp =>
     new DatabaseInitializer(connectionString, sp.GetRequiredService<ILogger<DatabaseInitializer>>()));
-builder.Services.AddSingleton<IScanEventRepository>(new ScanEventRepository(connectionString));
+builder.Services.AddSingleton<IScanEventRepository>(sp =>
+    new ScanEventRepository(
+        connectionString,
+        sp.GetRequiredService<ILogger<ScanEventRepository>>()));
 
 // Infrastructure — HTTP API Client with resilience
 builder.Services.AddHttpClient<IScanEventApiClient, ScanEventApiClient>(client =>
