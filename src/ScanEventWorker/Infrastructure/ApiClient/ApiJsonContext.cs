@@ -3,6 +3,9 @@ using ScanEventWorker.Domain;
 
 namespace ScanEventWorker.Infrastructure.ApiClient;
 
+// CamelCase policy applies to ScanEvent (SQS serialization/deserialization) - symmetrical both ways.
+// ScanEventApiResponse/ScanEventDto use explicit [JsonPropertyName] overrides and are unaffected.
+// Do NOT add [JsonPropertyName] to ScanEvent properties - they inherit camelCase from this policy.
 [JsonSerializable(typeof(ScanEventApiResponse))]
 [JsonSerializable(typeof(ScanEvent))]
 [JsonSourceGenerationOptions(PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase)]
