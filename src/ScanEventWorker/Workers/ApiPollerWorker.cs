@@ -56,7 +56,8 @@ public sealed class ApiPollerWorker(
             await repository.UpdateLastEventIdAsync(maxEventId, stoppingToken);
             lastEventId = maxEventId;
 
-            logger.LogInformation("Polled {Count} events. LastEventId now {LastEventId}",
+            logger.LogInformation(
+                "Polled {Count} valid events (LastEventId={LastEventId}). Malformed events logged as warnings above.",
                 events.Count, lastEventId);
         }
     }
