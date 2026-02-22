@@ -10,6 +10,7 @@ obj/
 ## IDE
 .vs/
 .idea/
+.pkl-lsp/
 *.swp
 *~
 
@@ -27,6 +28,11 @@ publish/
 project.lock.json
 project.fragment.lock.json
 artifacts/
+format-report.json
+
+# Test Coverage
+**/TestResults/
+coverage.*
 
 ## User secrets
 secrets.json

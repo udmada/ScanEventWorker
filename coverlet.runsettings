@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RunSettings>
+  <DataCollectionRunSettings>
+    <DataCollectors>
+      <DataCollector friendlyName="XPlat Code Coverage">
+        <Configuration>
+          <Format>cobertura</Format>
+          <!-- DI wiring bootstrapping code -->
+          <!-- SqsMessageQueue, ScanEventRepository, DatabaseInitializer are integration-test only
+          (ADR-001) -->
+          <Exclude>[ScanEventWorker]ScanEventWorker.Infrastructure.*,[ScanEventWorker]Program</Exclude>
+          <!-- STJ JsonSerializerContext source-gen partials (ApiJsonContext) -->
+          <ExcludeByAttribute>GeneratedCodeAttribute,ExcludeFromCodeCoverageAttribute</ExcludeByAttribute>
+          <!-- other generated files -->
+          <ExcludeByFile>**/obj/**/*.cs</ExcludeByFile>
+          <Threshold>80</Threshold>
+          <ThresholdType>line</ThresholdType>
+          <ThresholdStat>minimum</ThresholdStat>
+        </Configuration>
+      </DataCollector>
+    </DataCollectors>
+  </DataCollectionRunSettings>
+</RunSettings>
