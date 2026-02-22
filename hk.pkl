@@ -1,0 +1,27 @@
+amends "package://github.com/jdx/hk/releases/download/v1.36.0/hk@1.36.0#/Config.pkl"
+import "package://github.com/jdx/hk/releases/download/v1.36.0/hk@1.36.0#/Builtins.pkl"
+
+hooks {
+  ["pre-commit"] {
+    fix = true
+    stash = "git"
+    steps {
+      ["pkl-gen"] {
+        glob = ".github/pkl/**/*.*"
+        fix = "mise run pkl:gen"
+        stage = ".github/"
+      }
+      ["dotnet-build"] {
+        glob = "**/*.{cs,csproj,slnx}"
+        check = "mise run build"
+      }
+    }
+  }
+  ["pre-push"] {
+    steps {
+      ["dotnet-test"] {
+        check = "mise run test"
+      }
+    }
+  }
+}

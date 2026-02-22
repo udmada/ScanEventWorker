@@ -1,0 +1,83 @@
+# Generated from Workflow.pkl. DO NOT EDIT.
+name: CI
+'on': {}
+jobs:
+  build:
+    runs-on: ubuntu-slim
+    steps:
+    - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      with:
+        fetch-depth: 1
+    - uses: jdx/mise-action@6d1e696aa24c1aa1bcc1adea0212707c71ab78a8 # v3
+      with:
+        experimental: true
+    - name: mise cache
+      id: mise-cache
+      uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+      with:
+        path: ~/.mise/install/cache
+        key: mise-${{hashFiles('.mise.lock')}}
+        restore-keys: mise-
+    - name: dotnet restore cache
+      id: dotnet-cache
+      uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+      with:
+        path: ~/.nuget/packages
+        key: nuget-${{hashFiles('**/packages.lock.json')}}
+        restore-keys: nuget-
+    - name: Verify pkl gen is up to date
+      run: mise run pkl:gen && git diff --exit-code .github/
+    - name: Build
+      run: mise run build
+  test:
+    needs: build
+    runs-on: ubuntu-slim
+    steps:
+    - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      with:
+        fetch-depth: 1
+    - uses: jdx/mise-action@6d1e696aa24c1aa1bcc1adea0212707c71ab78a8 # v3
+      with:
+        experimental: true
+    - name: mise cache
+      id: mise-cache
+      uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+      with:
+        path: ~/.mise/install/cache
+        key: mise-${{hashFiles('.mise.lock')}}
+        restore-keys: mise-
+    - name: dotnet restore cache
+      id: dotnet-cache
+      uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+      with:
+        path: ~/.nuget/packages
+        key: nuget-${{hashFiles('**/packages.lock.json')}}
+        restore-keys: nuget-
+    - name: Test
+      run: mise run test
+  catch-AOT-specific-issues:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      with:
+        fetch-depth: 1
+    - uses: jdx/mise-action@6d1e696aa24c1aa1bcc1adea0212707c71ab78a8 # v3
+      with:
+        experimental: true
+    - name: mise cache
+      id: mise-cache
+      uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+      with:
+        path: ~/.mise/install/cache
+        key: mise-${{hashFiles('.mise.lock')}}
+        restore-keys: mise-
+    - name: dotnet restore cache
+      id: dotnet-cache
+      uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+      with:
+        path: ~/.nuget/packages
+        key: nuget-${{hashFiles('**/packages.lock.json')}}
+        restore-keys: nuget-
+    - name: AOT Publish
+      run: mise run publish

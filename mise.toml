@@ -1,0 +1,37 @@
+[tools]
+dotnet = "10"
+hk = "latest"
+pkl = "latest"
+
+[settings]
+disable_backends = ["asdf"]
+lockfile = true
+locked = true
+
+[tasks.restore]
+run = "dotnet restore"
+description = "Restore NuGet packages"
+
+[tasks.build]
+depends = ["restore"]
+run = "dotnet build --no-incremental"
+description = "Compile all projects"
+
+[tasks.test]
+depends = ["build"]
+run = "dotnet test --settings coverlet.runsettings"
+description = "Run tests with 80% line coverage gate (policy in coverlet.runsettings)"
+
+[tasks.publish]
+depends = ["test"]
+run = "dotnet publish src/ScanEventWorker/ScanEventWorker.csproj -c Release"
+description = "Native AOT publish — catches AOT-specific compile errors"
+
+[tasks."pkl:resolve"]
+run = "pkl project resolve .github/pkl/"
+description = "Update PklProject.deps.json lock file"
+
+[tasks."pkl:gen"]
+depends = ["pkl:resolve"]
+run = "pkl eval --project-dir .github/pkl/ -m .github/ .github/pkl/index.pkl"
+description = "Regenerate .github/workflows/*.yml and dependabot.yml from pkl source"
