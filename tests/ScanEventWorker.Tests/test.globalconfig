@@ -1,0 +1,4 @@
+is_global = true
+
+# Test methods don't need Async suffix
+dotnet_diagnostic.IDE1006.severity = none

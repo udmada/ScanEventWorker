@@ -1,9 +1,9 @@
 <Solution>
-  <Folder Name="/src/">
-    <Project Path="src/ScanEventWorker.Cdk/ScanEventWorker.Cdk.csproj" />
-    <Project Path="src/ScanEventWorker/ScanEventWorker.csproj" />
-  </Folder>
-  <Folder Name="/tests/">
-    <Project Path="tests/ScanEventWorker.Tests/ScanEventWorker.Tests.csproj" />
-  </Folder>
+    <Folder Name="/src/">
+        <Project Path="src/ScanEventWorker.Cdk/ScanEventWorker.Cdk.csproj"/>
+        <Project Path="src/ScanEventWorker/ScanEventWorker.csproj"/>
+    </Folder>
+    <Folder Name="/tests/">
+        <Project Path="tests/ScanEventWorker.Tests/ScanEventWorker.Tests.csproj"/>
+    </Folder>
 </Solution>

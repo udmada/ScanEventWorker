@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Options;
 using ScanEventWorker.Contracts;
+using ScanEventWorker.Domain;
 
 namespace ScanEventWorker.Workers;
 
@@ -20,16 +21,17 @@ public sealed class ApiPollerWorker(
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        var config = options.Value;
+        ScanEventApiOptions config = options.Value;
         logger.LogInformation("ApiPollerWorker starting. BatchSize={BatchSize}, PollingInterval={Interval}s",
             config.BatchSize, config.PollingIntervalSeconds);
 
-        var lastEventId = await repository.GetLastEventIdAsync(stoppingToken);
+        long lastEventId = await repository.GetLastEventIdAsync(stoppingToken);
         logger.LogInformation("Resuming from LastEventId={LastEventId}", lastEventId);
 
         while (!stoppingToken.IsCancellationRequested)
         {
-            var result = await apiClient.GetScanEventsAsync(lastEventId, config.BatchSize, stoppingToken);
+            Result<IReadOnlyList<ScanEvent>> result =
+                await apiClient.GetScanEventsAsync(lastEventId, config.BatchSize, stoppingToken);
 
             if (!result.IsSuccess)
             {
@@ -39,7 +41,7 @@ public sealed class ApiPollerWorker(
                 continue;
             }
 
-            var events = result.Value;
+            IReadOnlyList<ScanEvent> events = result.Value;
             if (events.Count == 0)
             {
                 logger.LogDebug("No new events. Waiting {Interval}s", config.PollingIntervalSeconds);
@@ -47,12 +49,12 @@ public sealed class ApiPollerWorker(
                 continue;
             }
 
-            foreach (var scanEvent in events)
+            foreach (ScanEvent scanEvent in events)
             {
                 await messageQueue.SendAsync(scanEvent, stoppingToken);
             }
 
-            var maxEventId = events[^1].EventId.Value;
+            long maxEventId = events[^1].EventId.Value;
             await repository.UpdateLastEventIdAsync(maxEventId, stoppingToken);
             lastEventId = maxEventId;
 

@@ -13,7 +13,7 @@ public sealed class ScanEventRepository(
     public async Task<long> GetLastEventIdAsync(CancellationToken ct)
     {
         await using var connection = new SqlConnection(connectionString);
-        var lastEventId = await connection.QuerySingleOrDefaultAsync<long?>(
+        long? lastEventId = await connection.QuerySingleOrDefaultAsync<long?>(
             new CommandDefinition(
                 "SELECT LastEventId FROM ProcessingState WHERE Id = 1",
                 cancellationToken: ct));
@@ -32,7 +32,7 @@ public sealed class ScanEventRepository(
     public async Task UpdateLastEventIdAsync(long eventId, CancellationToken ct)
     {
         await using var connection = new SqlConnection(connectionString);
-        await connection.ExecuteAsync(
+        _ = await connection.ExecuteAsync(
             new CommandDefinition(
                 "UPDATE ProcessingState SET LastEventId = @EventId, UpdatedAtUtc = SYSDATETIMEOFFSET() WHERE Id = 1",
                 new { EventId = eventId },
@@ -42,28 +42,28 @@ public sealed class ScanEventRepository(
     public async Task UpsertParcelSummaryAsync(ScanEvent scanEvent, CancellationToken ct)
     {
         await using var connection = new SqlConnection(connectionString);
-        await connection.ExecuteAsync(
+        _ = await connection.ExecuteAsync(
             new CommandDefinition("""
-                MERGE ParcelSummary AS target
-                USING (SELECT @ParcelId AS ParcelId) AS source
-                ON target.ParcelId = source.ParcelId
-                WHEN MATCHED AND @EventId > target.LatestEventId THEN
-                    UPDATE SET
-                        LatestEventId = @EventId,
-                        LatestType = @Type,
-                        LatestCreatedDateTimeUtc = @CreatedDateTimeUtc,
-                        LatestStatusCode = @StatusCode,
-                        LatestRunId = @RunId,
-                        PickedUpAtUtc = CASE WHEN @Type = 'PICKUP' AND target.PickedUpAtUtc IS NULL THEN @CreatedDateTimeUtc ELSE target.PickedUpAtUtc END,
-                        DeliveredAtUtc = CASE WHEN @Type = 'DELIVERY' AND target.DeliveredAtUtc IS NULL THEN @CreatedDateTimeUtc ELSE target.DeliveredAtUtc END
-                WHEN NOT MATCHED THEN
-                    INSERT (ParcelId, LatestEventId, LatestType, LatestCreatedDateTimeUtc, LatestStatusCode, LatestRunId, PickedUpAtUtc, DeliveredAtUtc)
-                    VALUES (
-                        @ParcelId, @EventId, @Type, @CreatedDateTimeUtc, @StatusCode, @RunId,
-                        CASE WHEN @Type = 'PICKUP' THEN @CreatedDateTimeUtc END,
-                        CASE WHEN @Type = 'DELIVERY' THEN @CreatedDateTimeUtc END
-                    );
-                """,
+                                  MERGE ParcelSummary AS target
+                                  USING (SELECT @ParcelId AS ParcelId) AS source
+                                  ON target.ParcelId = source.ParcelId
+                                  WHEN MATCHED AND @EventId > target.LatestEventId THEN
+                                      UPDATE SET
+                                          LatestEventId = @EventId,
+                                          LatestType = @Type,
+                                          LatestCreatedDateTimeUtc = @CreatedDateTimeUtc,
+                                          LatestStatusCode = @StatusCode,
+                                          LatestRunId = @RunId,
+                                          PickedUpAtUtc = CASE WHEN @Type = 'PICKUP' AND target.PickedUpAtUtc IS NULL THEN @CreatedDateTimeUtc ELSE target.PickedUpAtUtc END,
+                                          DeliveredAtUtc = CASE WHEN @Type = 'DELIVERY' AND target.DeliveredAtUtc IS NULL THEN @CreatedDateTimeUtc ELSE target.DeliveredAtUtc END
+                                  WHEN NOT MATCHED THEN
+                                      INSERT (ParcelId, LatestEventId, LatestType, LatestCreatedDateTimeUtc, LatestStatusCode, LatestRunId, PickedUpAtUtc, DeliveredAtUtc)
+                                      VALUES (
+                                          @ParcelId, @EventId, @Type, @CreatedDateTimeUtc, @StatusCode, @RunId,
+                                          CASE WHEN @Type = 'PICKUP' THEN @CreatedDateTimeUtc END,
+                                          CASE WHEN @Type = 'DELIVERY' THEN @CreatedDateTimeUtc END
+                                      );
+                                  """,
                 new
                 {
                     ParcelId = scanEvent.ParcelId.Value,

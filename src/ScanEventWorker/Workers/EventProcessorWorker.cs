@@ -16,16 +16,19 @@ public sealed class EventProcessorWorker(
 
         while (!stoppingToken.IsCancellationRequested)
         {
-            var messages = await messageQueue.ReceiveAsync<ScanEvent>(MaxMessagesPerReceive, stoppingToken);
+            IReadOnlyList<QueueMessage<ScanEvent>> messages =
+                await messageQueue.ReceiveAsync<ScanEvent>(MaxMessagesPerReceive, stoppingToken);
 
             if (messages.Count == 0)
+            {
                 continue;
+            }
 
             logger.LogDebug("Received {Count} messages from queue", messages.Count);
 
-            foreach (var message in messages)
+            foreach (QueueMessage<ScanEvent> message in messages)
             {
-                var result = await processor.ProcessSingleAsync(message.Body, stoppingToken);
+                Result<bool> result = await processor.ProcessSingleAsync(message.Body, stoppingToken);
 
                 if (result.IsSuccess)
                 {

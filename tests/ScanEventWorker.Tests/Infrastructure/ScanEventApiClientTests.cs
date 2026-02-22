@@ -18,7 +18,7 @@ public class ScanEventApiClientTests
             User = new UserDto { RunId = "run-1" }
         };
 
-        var result = ScanEventApiClient.MapToDomain(dto);
+        Result<ScanEvent> result = ScanEventApiClient.MapToDomain(dto);
 
         Assert.True(result.IsSuccess);
         Assert.Equal(new EventId(42), result.Value.EventId);
@@ -33,7 +33,7 @@ public class ScanEventApiClientTests
     {
         var dto = new ScanEventDto { EventId = 0, ParcelId = 1, Type = "STATUS" };
 
-        var result = ScanEventApiClient.MapToDomain(dto);
+        Result<ScanEvent> result = ScanEventApiClient.MapToDomain(dto);
 
         Assert.False(result.IsSuccess);
         Assert.Contains("Invalid EventId", result.Error);
@@ -44,7 +44,7 @@ public class ScanEventApiClientTests
     {
         var dto = new ScanEventDto { EventId = 1, ParcelId = -5, Type = "STATUS" };
 
-        var result = ScanEventApiClient.MapToDomain(dto);
+        Result<ScanEvent> result = ScanEventApiClient.MapToDomain(dto);
 
         Assert.False(result.IsSuccess);
         Assert.Contains("Invalid ParcelId", result.Error);
@@ -55,7 +55,7 @@ public class ScanEventApiClientTests
     {
         var dto = new ScanEventDto { EventId = 1, ParcelId = 1, Type = "" };
 
-        var result = ScanEventApiClient.MapToDomain(dto);
+        Result<ScanEvent> result = ScanEventApiClient.MapToDomain(dto);
 
         Assert.False(result.IsSuccess);
         Assert.Contains("Missing Type", result.Error);
@@ -64,15 +64,9 @@ public class ScanEventApiClientTests
     [Fact]
     public void MapToDomain_NullUser_DefaultsRunIdToEmpty()
     {
-        var dto = new ScanEventDto
-        {
-            EventId = 1,
-            ParcelId = 1,
-            Type = "DELIVERY",
-            User = null
-        };
+        var dto = new ScanEventDto { EventId = 1, ParcelId = 1, Type = "DELIVERY", User = null };
 
-        var result = ScanEventApiClient.MapToDomain(dto);
+        Result<ScanEvent> result = ScanEventApiClient.MapToDomain(dto);
 
         Assert.True(result.IsSuccess);
         Assert.Equal(string.Empty, result.Value.RunId);
@@ -81,15 +75,9 @@ public class ScanEventApiClientTests
     [Fact]
     public void MapToDomain_NullStatusCode_DefaultsToEmpty()
     {
-        var dto = new ScanEventDto
-        {
-            EventId = 1,
-            ParcelId = 1,
-            Type = "STATUS",
-            StatusCode = null!
-        };
+        var dto = new ScanEventDto { EventId = 1, ParcelId = 1, Type = "STATUS", StatusCode = null! };
 
-        var result = ScanEventApiClient.MapToDomain(dto);
+        Result<ScanEvent> result = ScanEventApiClient.MapToDomain(dto);
 
         Assert.True(result.IsSuccess);
         Assert.Equal(string.Empty, result.Value.StatusCode);
@@ -106,7 +94,7 @@ public class ScanEventApiClientTests
             User = new UserDto { RunId = "run-1" }
         };
 
-        var result = ScanEventApiClient.MapToDomain(dto);
+        Result<ScanEvent> result = ScanEventApiClient.MapToDomain(dto);
 
         Assert.True(result.IsSuccess);
         Assert.Equal("UNKNOWN_TYPE", result.Value.Type);

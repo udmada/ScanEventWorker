@@ -7,32 +7,6 @@ public sealed class ScanEventProcessor(
     IScanEventRepository repository,
     ILogger<ScanEventProcessor> logger) : IScanEventProcessor
 {
-    public async Task<Result<int>> ProcessBatchAsync(
-        IReadOnlyList<ScanEvent> events, CancellationToken ct)
-    {
-        var processed = 0;
-
-        foreach (var scanEvent in events)
-        {
-            var result = await ProcessSingleAsync(scanEvent, ct);
-            result.Match(
-                onSuccess: _ =>
-                {
-                    processed++;
-                    return true;
-                },
-                onFailure: error =>
-                {
-                    logger.LogWarning(
-                        "Failed to process EventId {EventId} for ParcelId {ParcelId}: {Error}",
-                        scanEvent.EventId, scanEvent.ParcelId, error);
-                    return false;
-                });
-        }
-
-        return Result<int>.Success(processed);
-    }
-
     public async Task<Result<bool>> ProcessSingleAsync(ScanEvent scanEvent, CancellationToken ct)
     {
         try
@@ -49,5 +23,31 @@ public sealed class ScanEventProcessor(
         {
             return Result<bool>.Failure($"Database error for EventId {scanEvent.EventId}: {ex.Message}");
         }
+    }
+
+    public async Task<Result<int>> ProcessBatchAsync(
+        IReadOnlyList<ScanEvent> events, CancellationToken ct)
+    {
+        int processed = 0;
+
+        foreach (ScanEvent scanEvent in events)
+        {
+            Result<bool> result = await ProcessSingleAsync(scanEvent, ct);
+            _ = result.Match(
+                _ =>
+                {
+                    processed++;
+                    return true;
+                },
+                error =>
+                {
+                    logger.LogWarning(
+                        "Failed to process EventId {EventId} for ParcelId {ParcelId}: {Error}",
+                        scanEvent.EventId, scanEvent.ParcelId, error);
+                    return false;
+                });
+        }
+
+        return Result<int>.Success(processed);
     }
 }

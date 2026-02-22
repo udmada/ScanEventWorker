@@ -1,6 +1,7 @@
 using System.Net.Http.Json;
 using ScanEventWorker.Contracts;
 using ScanEventWorker.Domain;
+using EventId = ScanEventWorker.Domain.EventId;
 
 namespace ScanEventWorker.Infrastructure.ApiClient;
 
@@ -13,18 +14,20 @@ public sealed class ScanEventApiClient(
     {
         try
         {
-            var response = await httpClient.GetFromJsonAsync(
+            ScanEventApiResponse? response = await httpClient.GetFromJsonAsync(
                 $"/v1/scans/scanevents?FromEventId={fromEventId}&Limit={limit}",
                 ApiJsonContext.Default.ScanEventApiResponse,
                 ct);
 
             if (response is null)
+            {
                 return Result<IReadOnlyList<ScanEvent>>.Failure("API returned null response");
+            }
 
             var events = new List<ScanEvent>(response.ScanEvents.Count);
-            foreach (var dto in response.ScanEvents)
+            foreach (ScanEventDto dto in response.ScanEvents)
             {
-                var parsed = MapToDomain(dto);
+                Result<ScanEvent> parsed = MapToDomain(dto);
                 if (parsed.IsSuccess)
                 {
                     events.Add(parsed.Value);
@@ -55,21 +58,18 @@ public sealed class ScanEventApiClient(
 
     public static Result<ScanEvent> MapToDomain(ScanEventDto dto)
     {
-        if (dto.EventId <= 0)
-            return Result<ScanEvent>.Failure($"Invalid EventId: {dto.EventId}");
-
-        if (dto.ParcelId <= 0)
-            return Result<ScanEvent>.Failure($"Invalid ParcelId: {dto.ParcelId}");
-
-        if (string.IsNullOrWhiteSpace(dto.Type))
-            return Result<ScanEvent>.Failure($"Missing Type for EventId {dto.EventId}");
-
-        return Result<ScanEvent>.Success(new ScanEvent(
-            new Domain.EventId(dto.EventId),
-            new Domain.ParcelId(dto.ParcelId),
-            dto.Type,
-            dto.CreatedDateTimeUtc,
-            dto.StatusCode ?? string.Empty,
-            dto.User?.RunId ?? string.Empty));
+        return dto.EventId <= 0
+            ? Result<ScanEvent>.Failure($"Invalid EventId: {dto.EventId}")
+            : dto.ParcelId <= 0
+                ? Result<ScanEvent>.Failure($"Invalid ParcelId: {dto.ParcelId}")
+                : string.IsNullOrWhiteSpace(dto.Type)
+                    ? Result<ScanEvent>.Failure($"Missing Type for EventId {dto.EventId}")
+                    : Result<ScanEvent>.Success(new ScanEvent(
+                        new EventId(dto.EventId),
+                        new ParcelId(dto.ParcelId),
+                        dto.Type,
+                        dto.CreatedDateTimeUtc,
+                        dto.StatusCode ?? string.Empty,
+                        dto.User?.RunId ?? string.Empty));
     }
 }

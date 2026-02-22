@@ -9,7 +9,7 @@ public class ResultTests
     {
         var result = Result<bool>.Success(true);
 
-        Assert.Throws<InvalidOperationException>(() => result.Error);
+        _ = Assert.Throws<InvalidOperationException>(() => result.Error);
     }
 
     [Fact]
@@ -17,6 +17,6 @@ public class ResultTests
     {
         var result = Result<bool>.Failure("some error");
 
-        Assert.Throws<InvalidOperationException>(() => result.Value);
+        _ = Assert.Throws<InvalidOperationException>(() => result.Value);
     }
 }

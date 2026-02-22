@@ -1,8 +1,8 @@
 namespace ScanEventWorker.Domain;
 
-public sealed class ParcelSummary
+public sealed class ParcelSummary(ParcelId parcelId)
 {
-    public ParcelId ParcelId { get; }
+    public ParcelId ParcelId { get; } = parcelId;
     public EventId LatestEventId { get; private set; }
     public string LatestType { get; private set; } = string.Empty;
     public DateTimeOffset LatestCreatedDateTimeUtc { get; private set; }
@@ -11,12 +11,12 @@ public sealed class ParcelSummary
     public DateTimeOffset? PickedUpAtUtc { get; private set; }
     public DateTimeOffset? DeliveredAtUtc { get; private set; }
 
-    public ParcelSummary(ParcelId parcelId) => ParcelId = parcelId;
-
     public void ApplyScanEvent(ScanEvent scanEvent)
     {
         if (scanEvent.EventId <= LatestEventId)
+        {
             return; // idempotent — ignore older events
+        }
 
         LatestEventId = scanEvent.EventId;
         LatestType = scanEvent.Type;
@@ -27,10 +27,12 @@ public sealed class ParcelSummary
         switch (scanEvent.Type)
         {
             case ScanEventTypes.Pickup:
-                PickedUpAtUtc ??= scanEvent.CreatedDateTimeUtc;   // first occurrence only
+                PickedUpAtUtc ??= scanEvent.CreatedDateTimeUtc; // first occurrence only
                 break;
             case ScanEventTypes.Delivery:
-                DeliveredAtUtc ??= scanEvent.CreatedDateTimeUtc;  // first occurrence only
+                DeliveredAtUtc ??= scanEvent.CreatedDateTimeUtc; // first occurrence only
+                break;
+            default:
                 break;
         }
     }
