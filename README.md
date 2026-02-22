@@ -76,8 +76,8 @@ Everything else (NuGet packages, SQS queues, DB schema) is self-contained.
 
 ## Assumptions
 
-1. Events are returned ordered by `EventId` ascending
-2. `EventId` is monotonically increasing — querying `FromEventId=X` reliably returns all events with ID ≥ X
+1. ~~Events are returned ordered by `EventId` ascending~~
+2. ~~`EventId` is monotonically increasing — querying `FromEventId=X` reliably returns all events with ID ≥ X~~
 3. The API returns an empty `ScanEvents` array when no more events exist (end-of-feed signal)
 4. Only one worker instance runs at a time (no distributed locking required)
 5. `RunId` comes from the nested `User.RunId` field in the JSON response
