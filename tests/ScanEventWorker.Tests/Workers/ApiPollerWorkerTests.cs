@@ -1,7 +1,6 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NSubstitute;
-using NSubstitute.ExceptionExtensions;
 using ScanEventWorker.Contracts;
 using ScanEventWorker.Domain;
 using ScanEventWorker.Workers;
@@ -156,13 +155,16 @@ public class ApiPollerWorkerTests
             {
                 callCount++;
                 if (callCount == 2)
+                {
+                    cts.Cancel();
                     throw new Exception("SQS unavailable");
+                }
                 return Task.CompletedTask;
             });
 
         var worker = CreateWorker();
         await worker.StartAsync(cts.Token);
-        await worker.ExecuteTask!.WaitAsync(TimeSpan.FromSeconds(4)).ContinueWith(_ => { });
+        try { await worker.ExecuteTask!; } catch { }
         await worker.StopAsync(CancellationToken.None);
 
         await _repository.DidNotReceive().UpdateLastEventIdAsync(Arg.Any<long>(), Arg.Any<CancellationToken>());
