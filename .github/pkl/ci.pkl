@@ -5,7 +5,7 @@ import "common.pkl"
 
 name = "CI"
 
-on {}
+on = "push"
 
 jobs {
   ["build"] {

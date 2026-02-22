@@ -1,6 +1,6 @@
 # Generated from Workflow.pkl. DO NOT EDIT.
 name: CI
-'on': {}
+'on': push
 jobs:
   build:
     runs-on: ubuntu-slim
