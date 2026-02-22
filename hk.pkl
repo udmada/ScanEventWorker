@@ -8,8 +8,7 @@ hooks {
     steps {
       ["pkl-gen"] {
         glob = ".github/pkl/**/*.*"
-        fix = "mise run pkl:gen"
-        stage = ".github/"
+        fix = "mise run pkl:gen && git add .github/"
       }
       ["dotnet-format"] {
         glob = "src/**/*.*"
