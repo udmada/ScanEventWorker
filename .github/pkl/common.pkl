@@ -16,15 +16,6 @@ steps: Listing<*Step | AbstractTypedStep> = new Listing {
     }
   }
   (catalog.`actions/cache@v4`) {
-    name = "mise cache"
-    id = "mise-cache"
-    with {
-      path = "~/.mise/install/cache"
-      key = "mise-${{hashFiles('.mise.lock')}}"
-      `restore-keys` = "mise-"
-    }
-  }
-  (catalog.`actions/cache@v4`) {
     name = "dotnet restore cache"
     id = "dotnet-cache"
     with {

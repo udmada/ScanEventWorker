@@ -677,60 +677,6 @@
         "resolved": "8.0.0",
         "contentHash": "7mu9v0QDv66ar3DpGSZHg9NuNcxDaaAcnMULuZlaTpP9+hwXhrxNGsF5GmLkSHxFdb5bBc1TzeujsRgTrPWi+Q=="
       }
-    },
-    "net10.0/osx-arm64": {
-      "Microsoft.Data.SqlClient": {
-        "type": "Direct",
-        "requested": "[7.0.0-preview3.25342.7, )",
-        "resolved": "7.0.0-preview3.25342.7",
-        "contentHash": "/4yUz6qHpd/CSurpFCoxeo6y3dUgSRwHoGB7A+VHRT4knPCpSFGtru9lbukSR0DW2wdJKvCoBA3IxcIxWjcH4w==",
-        "dependencies": {
-          "Azure.Core": "1.49.0",
-          "Azure.Identity": "1.16.0",
-          "Microsoft.Bcl.Cryptography": "9.0.9",
-          "Microsoft.Data.SqlClient.SNI.runtime": "6.0.2",
-          "Microsoft.Extensions.Caching.Memory": "9.0.9",
-          "Microsoft.IdentityModel.JsonWebTokens": "8.14.0",
-          "Microsoft.IdentityModel.Protocols.OpenIdConnect": "8.14.0",
-          "Microsoft.SqlServer.Server": "1.0.0",
-          "System.Configuration.ConfigurationManager": "9.0.9",
-          "System.Security.Cryptography.Pkcs": "9.0.9"
-        }
-      },
-      "Microsoft.DotNet.ILCompiler": {
-        "type": "Direct",
-        "requested": "[10.0.3, )",
-        "resolved": "10.0.3",
-        "contentHash": "H9kuN7egYzW5JAn5CMK8uJdJDVnPEDpZHzjOXyz1iAgvxNgVSoAiTNkCBeY2jaXcHlruF5fRUrZoUHUHXftDDA==",
-        "dependencies": {
-          "runtime.osx-arm64.Microsoft.DotNet.ILCompiler": "10.0.3"
-        }
-      },
-      "Microsoft.Data.SqlClient.SNI.runtime": {
-        "type": "Transitive",
-        "resolved": "6.0.2",
-        "contentHash": "f+pRODTWX7Y67jXO3T5S2dIPZ9qMJNySjlZT/TKmWVNWe19N8jcWmHaqHnnchaq3gxEKv1SWVY5EFzOD06l41w=="
-      },
-      "runtime.osx-arm64.Microsoft.DotNet.ILCompiler": {
-        "type": "Transitive",
-        "resolved": "10.0.3",
-        "contentHash": "4bZ2RJrwpq/rqEBaiAn7gsqotp5jOGSu+P5fBSUMlRpmCkWnnNTCdDIBwCBemW1QkhH83d2JS9Bz71ng6oWY0g=="
-      },
-      "System.Diagnostics.EventLog": {
-        "type": "Transitive",
-        "resolved": "11.0.0-preview.1.26104.118",
-        "contentHash": "DJ4MJMy6sbp3YkHVP/IXGlWJYhAcNNOehy3IM0v0beVMWGcGuda1fI201bGmtfvCr0uegIERxgVYImw+7SjfjA=="
-      },
-      "System.Security.Cryptography.Pkcs": {
-        "type": "Transitive",
-        "resolved": "9.0.9",
-        "contentHash": "Y7/wY5lqrzJOu53yLFLPGaeKBcdWNw193udOFRB2joFDVpXLkmfPpfgks7dEIJYPIrW4k3onwR+4nQz6vIaaqA=="
-      },
-      "System.Text.Encodings.Web": {
-        "type": "Transitive",
-        "resolved": "11.0.0-preview.1.26104.118",
-        "contentHash": "xwTSj+1YJPBjhkSUtn9GXRF4Af+T/pt2+TWeprNs1kJEBQCwJ/Sfn/soFeca4QV/D5uYr/YMRCezhbQZWToxKA=="
-      }
     }
   }
 }
