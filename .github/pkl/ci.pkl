@@ -5,6 +5,8 @@ import "common.pkl"
 
 name = "CI"
 
+on {}
+
 jobs {
   ["build"] {
     `runs-on` = "ubuntu-slim"
