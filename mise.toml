@@ -31,7 +31,7 @@ run = "dotnet test --settings coverlet.runsettings"
 description = "Run tests with 80% line coverage gate (policy in coverlet.runsettings)"
 
 [tasks.publish]
-depends = ["test"]
+depends = ["build"]
 run = "dotnet publish src/ScanEventWorker/ScanEventWorker.csproj -c Release"
 description = "Native AOT publish — catches AOT-specific compile errors"
 
