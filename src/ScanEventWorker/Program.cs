@@ -49,7 +49,7 @@ builder.Services.AddSingleton<IMessageQueue>(sp =>
     new SqsMessageQueue(sp.GetRequiredService<IAmazonSQS>(), sqsQueueUrl));
 
 // Services
-builder.Services.AddSingleton<ScanEventProcessor>();
+builder.Services.AddSingleton<IScanEventProcessor, ScanEventProcessor>();
 
 // Workers
 builder.Services.AddHostedService<ApiPollerWorker>();

@@ -5,7 +5,7 @@ namespace ScanEventWorker.Services;
 
 public sealed class ScanEventProcessor(
     IScanEventRepository repository,
-    ILogger<ScanEventProcessor> logger)
+    ILogger<ScanEventProcessor> logger) : IScanEventProcessor
 {
     public async Task<Result<int>> ProcessBatchAsync(
         IReadOnlyList<ScanEvent> events, CancellationToken ct)

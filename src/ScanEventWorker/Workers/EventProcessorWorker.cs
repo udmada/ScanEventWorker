@@ -1,12 +1,11 @@
 using ScanEventWorker.Contracts;
 using ScanEventWorker.Domain;
-using ScanEventWorker.Services;
 
 namespace ScanEventWorker.Workers;
 
 public sealed class EventProcessorWorker(
     IMessageQueue messageQueue,
-    ScanEventProcessor processor,
+    IScanEventProcessor processor,
     ILogger<EventProcessorWorker> logger) : BackgroundService
 {
     private const int MaxMessagesPerReceive = 10;
