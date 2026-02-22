@@ -7,6 +7,10 @@
     <UserSecretsId>dotnet-ScanEventWorker-a630243d-36de-431f-b7cb-d29159cfb22e</UserSecretsId>
     <PublishAot>true</PublishAot>
     <IsAotCompatible>true</IsAotCompatible>
+    <!-- IL2104/IL3053 are emitted by third-party packages (Dapper, Microsoft.Data.SqlClient,
+         System.Configuration.ConfigurationManager) during native code generation. Our own
+         registrations use factory lambdas and do not contribute to these warnings. -->
+    <NoWarn>$(NoWarn);IL2104;IL3053</NoWarn>
     <InterceptorsNamespaces>$(InterceptorsNamespaces);Dapper.AOT</InterceptorsNamespaces>
     <EnableConfigurationBindingGenerator>true</EnableConfigurationBindingGenerator>
     <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
