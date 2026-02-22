@@ -99,4 +99,15 @@ public class ScanEventApiClientTests
         Assert.True(result.IsSuccess);
         Assert.Equal("UNKNOWN_TYPE", result.Value.Type);
     }
+
+    [Fact]
+    public void MapToDomain_LowercaseType_NormalisedToUppercase()
+    {
+        var dto = new ScanEventDto { EventId = 1, ParcelId = 1, Type = "pickup", User = null };
+
+        Result<ScanEvent> result = ScanEventApiClient.MapToDomain(dto);
+
+        Assert.True(result.IsSuccess);
+        Assert.Equal("PICKUP", result.Value.Type);
+    }
 }

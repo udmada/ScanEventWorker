@@ -67,7 +67,7 @@ public sealed class ScanEventApiClient(
                     : Result<ScanEvent>.Success(new ScanEvent(
                         new EventId(dto.EventId),
                         new ParcelId(dto.ParcelId),
-                        dto.Type,
+                        dto.Type.ToUpperInvariant(),
                         dto.CreatedDateTimeUtc,
                         dto.StatusCode ?? string.Empty,
                         dto.User?.RunId ?? string.Empty));
