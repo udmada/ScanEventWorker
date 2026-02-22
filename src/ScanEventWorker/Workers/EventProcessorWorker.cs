@@ -39,7 +39,7 @@ public sealed class EventProcessorWorker(
                     logger.LogWarning(
                         "Failed to process EventId {EventId}: {Error}. Message will be redelivered by SQS",
                         message.Body.EventId, result.Error);
-                    // Don't delete — SQS redelivers after visibility timeout, then DLQ after maxReceiveCount
+                    // Don't delete- SQS redelivers after visibility timeout, then DLQ after maxReceiveCount
                 }
             }
         }

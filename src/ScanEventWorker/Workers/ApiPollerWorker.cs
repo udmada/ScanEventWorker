@@ -53,7 +53,7 @@ public sealed class ApiPollerWorker(
             if (events.Count > 1 && events.Zip(events.Skip(1)).Any(pair => pair.First.EventId.Value > pair.Second.EventId.Value))
             {
                 logger.LogWarning(
-                    "API returned {Count} events out of EventId order — sorting defensively",
+                    "API returned {Count} events out of EventId order - sorting defensively",
                     events.Count);
                 events = [.. events.OrderBy(e => e.EventId.Value)];
             }
@@ -63,7 +63,7 @@ public sealed class ApiPollerWorker(
             if (staleCount > 0)
             {
                 logger.LogWarning(
-                    "API returned {StaleCount} stale events with EventId < {FromId} — possible FromEventId contract violation",
+                    "API returned {StaleCount} stale events with EventId < {FromId} - possible FromEventId contract violation",
                     staleCount,
                     lastEventId);
             }

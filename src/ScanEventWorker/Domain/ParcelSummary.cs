@@ -15,7 +15,7 @@ public sealed class ParcelSummary(ParcelId parcelId)
     {
         if (scanEvent.EventId <= LatestEventId)
         {
-            return; // idempotent — ignore older events
+            return; // idempotent - ignore older events
         }
 
         LatestEventId = scanEvent.EventId;

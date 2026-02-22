@@ -12,7 +12,7 @@ using ScanEventWorker.Workers;
 using var instanceMutex = new Mutex(initiallyOwned: true, name: "Global\\ScanEventWorker_Instance", out bool mutexAcquired);
 if (!mutexAcquired)
 {
-    // Another instance is already running — log to stderr and exit cleanly.
+    // Another instance is already running - log to stderr and exit cleanly.
     Console.Error.WriteLine("FATAL: Another ScanEventWorker instance is already running. Exiting.");
     return 1;
 }
@@ -38,7 +38,7 @@ var scanOptions = new ScanEventApiOptions
 
 builder.Services.AddSingleton(scanOptions);
 
-// Infrastructure — Persistence
+// Infrastructure Persistence
 builder.Services.AddSingleton(sp =>
     new DatabaseInitialiser(connectionString, sp.GetRequiredService<ILogger<DatabaseInitialiser>>()));
 builder.Services.AddSingleton<IScanEventRepository>(sp =>
@@ -46,14 +46,14 @@ builder.Services.AddSingleton<IScanEventRepository>(sp =>
         connectionString,
         sp.GetRequiredService<ILogger<ScanEventRepository>>()));
 
-// Infrastructure — HTTP API Client with resilience
+// Infrastructure HTTP API Client with resilience
 builder.Services.AddHttpClient<IScanEventApiClient, ScanEventApiClient>(client =>
 {
     string baseUrl = scanOptions.BaseUrl ?? throw new InvalidOperationException("ScanEventApi:BaseUrl is required");
     client.BaseAddress = new Uri(baseUrl);
 }).AddStandardResilienceHandler();
 
-// Infrastructure — SQS
+// Infrastructure SQS
 builder.Services.AddSingleton<IAmazonSQS>(_ =>
 {
     string region = builder.Configuration["Aws:Region"] ?? "ap-southeast-2";

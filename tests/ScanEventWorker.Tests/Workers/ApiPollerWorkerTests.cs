@@ -233,7 +233,7 @@ public class ApiPollerWorkerTests
         await worker.ExecuteTask!;
         await worker.StopAsync(CancellationToken.None);
 
-        // After sort [5, 10], events[^1] is EventId=10 — the correct max
+        // After sort [5, 10], events[^1] is EventId=10- the correct max
         await _repository.Received(1).UpdateLastEventIdAsync(10L, Arg.Any<CancellationToken>());
     }
 
@@ -259,7 +259,7 @@ public class ApiPollerWorkerTests
         await worker.ExecuteTask!;
         await worker.StopAsync(CancellationToken.None);
 
-        // Stale events are processed normally — idempotent MERGE handles dedup.
+        // Stale events are processed normally - idempotent MERGE handles dedup.
         // lastEventId must not regress: advance marker stays at 20, not events[^1]=10.
         await _repository.Received(1).UpdateLastEventIdAsync(20L, Arg.Any<CancellationToken>());
         await _queue.Received(2).SendAsync(Arg.Any<ScanEvent>(), Arg.Any<CancellationToken>());
