@@ -1,4 +1,4 @@
-# ADR 001: ScanEventRepository — Integration Tests Only, No IDbConnection Factory
+# ADR 001: ScanEventRepository - Integration Tests Only, No IDbConnection Factory
 
 **Status:** Accepted
 **Date:** 2026-02-21
@@ -17,15 +17,15 @@ Do not introduce an `IDbConnection` factory. Accept that `ScanEventRepository` a
 
 ### The meaningful abstraction already exists
 
-`IScanEventRepository` means every consumer — `ApiPollerWorker`, `EventProcessorWorker`, and `ScanEventProcessor` — can be fully tested with NSubstitute mocks without touching a database. The repository implementation being untestable without a DB is a much smaller problem than the workers being untestable.
+`IScanEventRepository` means every consumer - `ApiPollerWorker`, `EventProcessorWorker`, and `ScanEventProcessor` - can be fully tested with NSubstitute mocks without touching a database. The repository implementation being untestable without a DB is a much smaller problem than the workers being untestable.
 
 ### Mocking IDbConnection is unsafe under Dapper.AOT
 
-Dapper.AOT generates source-level interceptors that target specific `SqlConnection` call sites at compile time. A mock `IDbConnection` would not trigger those interceptors — tests would execute different code paths than production, making them unreliable and potentially misleading.
+Dapper.AOT generates source-level interceptors that target specific `SqlConnection` call sites at compile time. A mock `IDbConnection` would not trigger those interceptors - tests would execute different code paths than production, making them unreliable and potentially misleading.
 
 ### The SQL is the logic
 
-The interesting correctness properties of `ScanEventRepository` — the MERGE semantics, the idempotency guard, the PICKUP/DELIVERY timestamp invariant — live in the SQL strings. No amount of `IDbConnection` mocking verifies that the SQL is correct. This is genuine integration-test territory.
+The interesting correctness properties of `ScanEventRepository` - the MERGE semantics, the idempotency guard, the PICKUP/DELIVERY timestamp invariant - live in the SQL strings. No amount of `IDbConnection` mocking verifies that the SQL is correct. This is genuine integration-test territory.
 
 ### Deadline and risk
 
@@ -41,7 +41,7 @@ Introducing a new abstraction layer less than two days before the deadline risks
 
 ## Consequences
 
-- `ScanEventRepository` and `DatabaseInitializer` are covered by integration tests only (requiring a running SQL Server — see Docker Compose setup in README).
+- `ScanEventRepository` and `DatabaseInitializer` are covered by integration tests only (requiring a running SQL Server - see Docker Compose setup in README).
 - All higher-level components (`ScanEventProcessor`, workers) remain fully unit-testable via `IScanEventRepository`.
 - The README documents the integration-test gap.
 

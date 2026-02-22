@@ -18,8 +18,8 @@ Don't use it. The design already handles failures correctly without a coordinato
 
 ## Why
 
-If `SendToSqs` fails, `LastEventId` doesn't advance — the next poll re-covers those events.
-If `MergeToDb` fails, the message isn't deleted — SQS redelivers via visibility timeout.
+If `SendToSqs` fails, `LastEventId` doesn't advance - the next poll re-covers those events.
+If `MergeToDb` fails, the message isn't deleted - SQS redelivers via visibility timeout.
 
 Both chains self-recover because the MERGE is idempotent:
 
@@ -27,7 +27,7 @@ Both chains self-recover because the MERGE is idempotent:
 incoming.EventId > stored.LatestEventId
 ```
 
-Replaying the same event is a no-op. Saga exists to handle cases where replay is *not* safe. That case doesn't exist here.
+Replaying the same event is a no-op. Saga exists to handle cases where replay is _not_ safe. That case doesn't exist here.
 
 ## What Saga Would Have Cost
 
@@ -41,12 +41,12 @@ All of that is already implicit in `LastEventId` + SQS visibility timeout. Addin
 
 This decision is specific to the current poll-based design. In an event-driven model the calculus changes.
 
-Each scan event arriving could naturally produce side-effects across multiple systems — a row written to DynamoDB for real-time lookup, a record appended to S3 for compliance archiving, a downstream notification, an audit trail. Each of those writes is a discrete step with its own failure mode. That's exactly the problem Saga is designed for: coordinating a sequence of steps across systems where partial failure needs explicit handling.
+Each scan event arriving could naturally produce side-effects across multiple systems - a row written to DynamoDB for real-time lookup, a record appended to S3 for compliance archiving, a downstream notification, an audit trail. Each of those writes is a discrete step with its own failure mode. That's exactly the problem Saga is designed for: coordinating a sequence of steps across systems where partial failure needs explicit handling.
 
-AWS Step Functions would carry most of the weight here — the state machine, retry policies, compensation routing, and execution history are all provided out of the box. The idempotency invariant still applies and still protects against duplicate executions, but Saga would earn its complexity cost in that design.
+AWS Step Functions would carry most of the weight here - the state machine, retry policies, compensation routing, and execution history are all provided out of the box. The idempotency invariant still applies and still protects against duplicate executions, but Saga would earn its complexity cost in that design.
 
 The current poll-based single-DB design doesn't have that fan-out problem, so Saga adds nothing today.
 
 ## Note on Test Cancellation
 
-The `CancellationToken` complexity in the worker tests is a test harness concern — how to drive a `BackgroundService` loop one iteration at a time. It's unrelated to this decision.
+The `CancellationToken` complexity in the worker tests is a test harness concern - how to drive a `BackgroundService` loop one iteration at a time. It's unrelated to this decision.
