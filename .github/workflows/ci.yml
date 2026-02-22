@@ -27,6 +27,8 @@ jobs:
         restore-keys: nuget-
     - name: Verify pkl gen is up to date
       run: mise run pkl:gen && git diff --exit-code .github/
+    - name: Format check
+      run: mise run format:check
     - name: Build
       run: mise run build
   test:
@@ -79,5 +81,7 @@ jobs:
         path: ~/.nuget/packages
         key: nuget-${{hashFiles('**/packages.lock.json')}}
         restore-keys: nuget-
+    - name: Install AOT prerequisites
+      run: sudo apt-get install -y zlib1g-dev
     - name: AOT Publish
       run: mise run publish

@@ -12,6 +12,14 @@ locked = true
 run = "dotnet restore"
 description = "Restore NuGet packages"
 
+[tasks.format]
+run = "dotnet format"
+description = "Auto-format all source files"
+
+[tasks."format:check"]
+run = "dotnet format --verify-no-changes"
+description = "Verify all source files are formatted"
+
 [tasks.build]
 depends = ["restore"]
 run = "dotnet build --no-incremental"

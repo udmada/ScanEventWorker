@@ -11,8 +11,14 @@ hooks {
         fix = "mise run pkl:gen"
         stage = ".github/"
       }
+      ["dotnet-format"] {
+        glob = "src/**/*.*"
+        fix = "dotnet format"
+        check = "dotnet format --verify-no-changes"
+        stage = "src/"
+      }
       ["dotnet-build"] {
-        glob = "**/*.{cs,csproj,slnx}"
+        glob = List("src/**/*.*", "**/*.slnx")
         check = "mise run build"
       }
     }
