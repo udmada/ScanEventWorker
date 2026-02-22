@@ -58,8 +58,8 @@ flowchart LR
 
 **Two decoupled `BackgroundService` workers:**
 
-- **`ApiPollerWorker`** — Reads `LastEventId` from `ProcessingState` on startup, polls the API in batches, sends valid events to SQS, and advances `LastEventId` after each successful batch. Resumes from the last processed event on restart.
-- **`EventProcessorWorker`** — Long-polls SQS, MERGEs each event into `ParcelSummary`, then deletes the message. On failure the message is not deleted — SQS redelivers after the visibility timeout and moves it to the DLQ after 3 attempts.
+- **`ApiPollerWorker`** - Reads `LastEventId` from `ProcessingState` on startup, polls the API in batches, sends valid events to SQS, and advances `LastEventId` after each successful batch. Resumes from the last processed event on restart.
+- **`EventProcessorWorker`** - Long-polls SQS, MERGEs each event into `ParcelSummary`, then deletes the message. On failure the message is not deleted - SQS redelivers after the visibility timeout and moves it to the DLQ after 3 attempts.
 
 ## Prerequisites
 
@@ -84,9 +84,9 @@ dotnet run --project src/ScanEventWorker/ScanEventWorker.csproj
 
 ## Assumptions
 
-0. Scan Event API pre-exists and _all_ events are retained indefinitely — if violated, see [Known Limitation 1](#known-limitations).
+0. Scan Event API pre-exists and and _all_ events are retained at _all_ times indefinitely.
 1. ~~Events are returned ordered by `EventId` ascending~~
-2. ~~`EventId` is monotonically increasing — querying `FromEventId=X` reliably returns all events with ID ≥ X~~
+2. ~~`EventId` is monotonically increasing - querying `FromEventId=X` reliably returns all events with ID ≥ X~~
 3. ~~The API returns an empty `ScanEvents` array when no more events exist (end-of-feed signal)~~
    - guarded: `ApiPollerWorker` checks `Count == 0` and backs off
 4. ~~Only one worker instance runs at a time~~
@@ -117,15 +117,16 @@ dotnet run --project src/ScanEventWorker/ScanEventWorker.csproj
 
 ## Known Limitations
 
-1. **Event retention** (violates [Assumption 0](#assumptions))
+1. Event retention
+   - The worker assumes the API retains all events indefinitely (Assumption 0)
    - If the API enforces a rolling retention window (e.g. 7 days), downtime longer than that window causes permanent data loss with no recovery path.
-2. **No API authentication/authorisation**
+2. No API authentication/authorisation
    - `ScanEventApiClient` sends unauth HTTP requests. The spec sample shows no auth header
    - if the production API requires one, it must be added before deployment
-3. **Poller cannot scale horizontally**
+3. No horizontal scaling-up/out
    - `ProcessingState` is a single-row table and the startup `Mutex` enforces one poller instance
    - Scaling the poller requires distributed locking and a different cursor model
-4. **DLQ is silent**
+4. All quiet on the DLQ front
    - Messages that fail 3 times move to the DLQ and die there
    - Without monitoring they accumulate undetected
 
@@ -155,5 +156,3 @@ dotnet run --project src/ScanEventWorker/ScanEventWorker.csproj
   - Domain model
   - error handling
   - AOT decisions
-
----
