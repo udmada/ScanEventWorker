@@ -49,12 +49,31 @@ public sealed class ApiPollerWorker(
                 continue;
             }
 
+            // Guard: sort defensively if API returns events out of EventId order (Assumption 1)
+            if (events.Count > 1 && events.Zip(events.Skip(1)).Any(pair => pair.First.EventId.Value > pair.Second.EventId.Value))
+            {
+                logger.LogWarning(
+                    "API returned {Count} events out of EventId order — sorting defensively",
+                    events.Count);
+                events = [.. events.OrderBy(e => e.EventId.Value)];
+            }
+
+            // Guard: warn if API returns events older than lastEventId (Assumption 2)
+            int staleCount = events.Count(e => e.EventId.Value < lastEventId);
+            if (staleCount > 0)
+            {
+                logger.LogWarning(
+                    "API returned {StaleCount} stale events with EventId < {FromId} — possible FromEventId contract violation",
+                    staleCount,
+                    lastEventId);
+            }
+
             foreach (ScanEvent scanEvent in events)
             {
                 await messageQueue.SendAsync(scanEvent, stoppingToken);
             }
 
-            long maxEventId = events[^1].EventId.Value;
+            long maxEventId = Math.Max(lastEventId, events[^1].EventId.Value);
             await repository.UpdateLastEventIdAsync(maxEventId, stoppingToken);
             lastEventId = maxEventId;
 

@@ -4,11 +4,11 @@ using Microsoft.Data.SqlClient;
 namespace ScanEventWorker.Infrastructure.Persistence;
 
 [DapperAot]
-public sealed class DatabaseInitializer(string connectionString, ILogger<DatabaseInitializer> logger)
+public sealed class DatabaseInitialiser(string connectionString, ILogger<DatabaseInitialiser> logger)
 {
-    public async Task InitializeAsync(CancellationToken ct)
+    public async Task InitialiseAsync(CancellationToken ct)
     {
-        logger.LogInformation("Initializing database schema");
+        logger.LogInformation("Initialising database schema");
 
         await using var connection = new SqlConnection(connectionString);
         await connection.OpenAsync(ct);
@@ -42,6 +42,6 @@ public sealed class DatabaseInitializer(string connectionString, ILogger<Databas
                                                                 END
                                                                 """, cancellationToken: ct));
 
-        logger.LogInformation("Database schema initialized");
+        logger.LogInformation("Database schema initialised");
     }
 }

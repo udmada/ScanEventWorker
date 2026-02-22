@@ -22,7 +22,7 @@ public sealed class ScanEventRepository(
         {
             logger.LogWarning(
                 "ProcessingState row not found - defaulting LastEventId to 1. " +
-                "Re-run DatabaseInitializer or INSERT INTO ProcessingState (Id, LastEventId) VALUES (1, 1).");
+                "Re-run DatabaseInitialiser or INSERT INTO ProcessingState (Id, LastEventId) VALUES (1, 1).");
             return 1L;
         }
 

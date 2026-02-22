@@ -7,6 +7,16 @@ using ScanEventWorker.Infrastructure.Persistence;
 using ScanEventWorker.Services;
 using ScanEventWorker.Workers;
 
+// Prevent multiple instances from running simultaneously (see Assumptions: single-instance constraint).
+// The Mutex is held for the lifetime of the process; released automatically on process exit.
+using var instanceMutex = new Mutex(initiallyOwned: true, name: "Global\\ScanEventWorker_Instance", out bool mutexAcquired);
+if (!mutexAcquired)
+{
+    // Another instance is already running — log to stderr and exit cleanly.
+    Console.Error.WriteLine("FATAL: Another ScanEventWorker instance is already running. Exiting.");
+    return 1;
+}
+
 HostApplicationBuilder builder = Host.CreateApplicationBuilder(args);
 
 // Configuration
@@ -30,7 +40,7 @@ builder.Services.AddSingleton(scanOptions);
 
 // Infrastructure — Persistence
 builder.Services.AddSingleton(sp =>
-    new DatabaseInitializer(connectionString, sp.GetRequiredService<ILogger<DatabaseInitializer>>()));
+    new DatabaseInitialiser(connectionString, sp.GetRequiredService<ILogger<DatabaseInitialiser>>()));
 builder.Services.AddSingleton<IScanEventRepository>(sp =>
     new ScanEventRepository(
         connectionString,
@@ -69,8 +79,10 @@ builder.Services.AddHostedService<EventProcessorWorker>();
 
 IHost host = builder.Build();
 
-// Initialize database schema on startup
-DatabaseInitializer dbInitializer = host.Services.GetRequiredService<DatabaseInitializer>();
-await dbInitializer.InitializeAsync(CancellationToken.None);
+// Initialise database schema on startup
+DatabaseInitialiser dbInitialiser = host.Services.GetRequiredService<DatabaseInitialiser>();
+await dbInitialiser.InitialiseAsync(CancellationToken.None);
 
 host.Run();
+
+return 0;

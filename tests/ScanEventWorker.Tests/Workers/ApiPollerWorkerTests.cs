@@ -210,4 +210,58 @@ public class ApiPollerWorkerTests
 
         await _repository.Received(1).UpdateLastEventIdAsync(Arg.Any<long>(), Arg.Any<CancellationToken>());
     }
+
+    [Fact(Timeout = 5000)]
+    public async Task WhenApiReturnsOutOfOrderEvents_SortsDefensivelyAndAdvancesCorrectly()
+    {
+        var cts = new CancellationTokenSource();
+        // Deliberately out of order: 10 first, then 5
+        var events = new List<ScanEvent> { MakeScanEvent(10), MakeScanEvent(5) };
+
+        _ = _repository.GetLastEventIdAsync(Arg.Any<CancellationToken>()).Returns(0L);
+        _ = _apiClient.GetScanEventsAsync(Arg.Any<long>(), Arg.Any<int>(), Arg.Any<CancellationToken>())
+            .Returns(Result<IReadOnlyList<ScanEvent>>.Success(events));
+        _ = _repository.UpdateLastEventIdAsync(Arg.Any<long>(), Arg.Any<CancellationToken>())
+            .Returns(callInfo =>
+            {
+                cts.Cancel();
+                return Task.CompletedTask;
+            });
+
+        ApiPollerWorker worker = CreateWorker();
+        await worker.StartAsync(cts.Token);
+        await worker.ExecuteTask!;
+        await worker.StopAsync(CancellationToken.None);
+
+        // After sort [5, 10], events[^1] is EventId=10 — the correct max
+        await _repository.Received(1).UpdateLastEventIdAsync(10L, Arg.Any<CancellationToken>());
+    }
+
+    [Fact(Timeout = 5000)]
+    public async Task WhenApiReturnsStaleEvents_ContinuesProcessingNormally()
+    {
+        var cts = new CancellationTokenSource();
+        // Both events are older than lastEventId=20
+        var events = new List<ScanEvent> { MakeScanEvent(5), MakeScanEvent(10) };
+
+        _ = _repository.GetLastEventIdAsync(Arg.Any<CancellationToken>()).Returns(20L);
+        _ = _apiClient.GetScanEventsAsync(Arg.Any<long>(), Arg.Any<int>(), Arg.Any<CancellationToken>())
+            .Returns(Result<IReadOnlyList<ScanEvent>>.Success(events));
+        _ = _repository.UpdateLastEventIdAsync(Arg.Any<long>(), Arg.Any<CancellationToken>())
+            .Returns(callInfo =>
+            {
+                cts.Cancel();
+                return Task.CompletedTask;
+            });
+
+        ApiPollerWorker worker = CreateWorker();
+        await worker.StartAsync(cts.Token);
+        await worker.ExecuteTask!;
+        await worker.StopAsync(CancellationToken.None);
+
+        // Stale events are processed normally — idempotent MERGE handles dedup.
+        // lastEventId must not regress: advance marker stays at 20, not events[^1]=10.
+        await _repository.Received(1).UpdateLastEventIdAsync(20L, Arg.Any<CancellationToken>());
+        await _queue.Received(2).SendAsync(Arg.Any<ScanEvent>(), Arg.Any<CancellationToken>());
+    }
 }

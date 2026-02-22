@@ -26,7 +26,7 @@ docker exec -it $(docker ps -q -f ancestor=mcr.microsoft.com/azure-sql-edge) \
   -Q "CREATE DATABASE ScanEvents"
 ```
 
-The worker auto-creates the `ProcessingState` and `ParcelSummary` tables on startup via `DatabaseInitializer`.
+The worker auto-creates the `ProcessingState` and `ParcelSummary` tables on startup via `DatabaseInitialiser`.
 
 ### 3. Set dummy AWS credentials (LocalStack doesn't validate them)
 
