@@ -64,25 +64,27 @@ flowchart LR
 ## Prerequisites
 
 - [mise](https://mise.jdx.dev/getting-started.html)
-
-- [Docker](https://www.docker.com/) (for SQL Server + LocalStack)
+  - manages .NET 10, pkl, and hk
+- [Docker](https://www.docker.com/)
+  - SQL Server (Azure Edge SQL for aarch64) + LocalStack
 
 ## Quick Start
 
 See **[docs/local-setup.md](docs/local-setup.md)** for the full setup walkthrough. In brief:
 
 ```shell
-mise i                     # Install all dependencies incl dotnet
-dotnet test                # Running Tests
-dotnet build               # Debug build
-dotnet publish -c Release  # Native AOT binary
-docker-compose up -d
+mise i                         # Install .NET 10, pkl, hk
+mise run test                  # Run tests with 80% coverage gate
+mise run build                 # Debug build
+mise run publish               # Native AOT binary
+docker-compose up -d           # Start SQL Server + LocalStack
 dotnet user-secrets set "ScanEventApi:BaseUrl" "https://your-api-host" --project src/ScanEventWorker
 dotnet run --project src/ScanEventWorker/ScanEventWorker.csproj
 ```
 
 ## Assumptions
 
+0. Scan Event API pre-exists and _all_ events are retained indefinitely — if violated, see [Known Limitation 1](#known-limitations).
 1. ~~Events are returned ordered by `EventId` ascending~~
 2. ~~`EventId` is monotonically increasing — querying `FromEventId=X` reliably returns all events with ID ≥ X~~
 3. ~~The API returns an empty `ScanEvents` array when no more events exist (end-of-feed signal)~~
@@ -111,7 +113,21 @@ dotnet run --project src/ScanEventWorker/ScanEventWorker.csproj
     - the last processed event is re-fetched on every cycle to avoid missing events if IDs have gaps
     - the idempotent MERGE absorbs the duplicate without side effects
 14. The event feed starts at `EventId=1`
-    - `ProcessingState` is seeded with `LastEventId=1` on first run d
+    - `ProcessingState` is seeded with `LastEventId=1` on first run
+
+## Known Limitations
+
+1. **Event retention** (violates [Assumption 0](#assumptions))
+   - If the API enforces a rolling retention window (e.g. 7 days), downtime longer than that window causes permanent data loss with no recovery path.
+2. **No API authentication/authorisation**
+   - `ScanEventApiClient` sends unauth HTTP requests. The spec sample shows no auth header
+   - if the production API requires one, it must be added before deployment
+3. **Poller cannot scale horizontally**
+   - `ProcessingState` is a single-row table and the startup `Mutex` enforces one poller instance
+   - Scaling the poller requires distributed locking and a different cursor model
+4. **DLQ is silent**
+   - Messages that fail 3 times move to the DLQ and die there
+   - Without monitoring they accumulate undetected
 
 ## Potential Improvements
 
@@ -134,6 +150,7 @@ dotnet run --project src/ScanEventWorker/ScanEventWorker.csproj
 - [Infrastructure](docs/infrastructure.md)
   - CDK stack
   - downstream fan-out architecture
+  - spec constraint: why polling exists, and the event-driven alternative
 - [Design Rationale](docs/design-rationale.md)
   - Domain model
   - error handling
