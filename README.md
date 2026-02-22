@@ -1,6 +1,8 @@
 # ScanEventWorker
 
-A .NET 10 worker service that continuously polls a scan event API, queues events through Amazon SQS, and persists parcel summary data to SQL Server. Built for the Freightways take-home exercise.
+A .NET 10 worker service that continuously polls a scan event API, queues events through Amazon SQS, and persists parcel summary data to SQL Server.
+
+Built for the Freightways take-home exercise.
 
 ## Architecture
 
@@ -35,42 +37,23 @@ flowchart LR
 
 ## Prerequisites
 
-- [.NET 10 SDK](https://dotnet.microsoft.com/download)
+- [mise](https://mise.jdx.dev/getting-started.html)
+
 - [Docker](https://www.docker.com/) (for SQL Server + LocalStack)
 
 ## Quick Start
 
 See **[docs/local-setup.md](docs/local-setup.md)** for the full setup walkthrough. In brief:
 
-```bash
+```shell
+mise i                     # Install all dependencies incl dotnet
+dotnet test                # Running Tests
+dotnet build               # Debug build
+dotnet publish -c Release  # Native AOT binary
 docker-compose up -d
 dotnet user-secrets set "ScanEventApi:BaseUrl" "https://your-api-host" --project src/ScanEventWorker
 dotnet run --project src/ScanEventWorker/ScanEventWorker.csproj
 ```
-
-## Running Tests
-
-```bash
-dotnet test
-```
-
-33 unit tests covering domain behaviour, API client parsing/validation, processor logic, and both BackgroundService workers (`ApiPollerWorker`, `EventProcessorWorker`).
-
-## Building
-
-```bash
-dotnet build          # Debug build
-dotnet publish -c Release  # Native AOT binary
-```
-
-## External Dependencies
-
-| Dependency  | Purpose                                       |
-| ----------- | --------------------------------------------- |
-| Docker      | Runs SQL Server (Azure SQL Edge) + LocalStack |
-| .NET 10 SDK | Build and run the solution                    |
-
-Everything else (NuGet packages, SQS queues, DB schema) is self-contained.
 
 ---
 
@@ -87,7 +70,7 @@ Everything else (NuGet packages, SQS queues, DB schema) is self-contained.
 
 ## Potential Improvements
 
-- [ ] **Health checks**: expose `/healthz` endpoint reporting queue depth and DB connectivity
+- [ ] **Health checks**: expose `/healthz` endpoint[^1] reporting queue depth and DB connectivity
 - [ ] **Metrics**: OpenTelemetry counters for events processed/sec, SQS queue depth, DLQ size
 - [ ] **Horizontal scaling**: run multiple `EventProcessorWorker` instances; SQS competing-consumer model handles this without coordination
 - [ ] **DLQ visibility**: persist DLQ messages to a `FailedEvents` DB table for operational queries
@@ -95,10 +78,20 @@ Everything else (NuGet packages, SQS queues, DB schema) is self-contained.
 - [ ] **Database migrations**: replace the `IF NOT EXISTS` initialiser with FluentMigrator for versioned schema changes
 - [ ] **Production database**: RDS SQL Server (managed via CDK stack) instead of Docker for managed backups and HA
 
+[^1]: `/healthz` endpoint is [actually deprecated](https://kubernetes.io/docs/reference/using-api/health-checks/#api-endpoints-for-health) since Kubernetes v1.16, and the more specific `/livez` and `/readyz` endpoints are preferred.
+
+## Detailed Documentations
+
+- [Local Setup](docs/local-setup.md)
+  - Docker
+  - Azure Edge SQL database
+  - credentials, and run steps
+- [Infrastructure](docs/infrastructure.md)
+  - CDK stack
+  - downstream fan-out architecture
+- [Design Rationale](docs/design-rationale.md)
+  - Domain model
+  - error handling
+  - AOT decisions
+
 ---
-
-## Further Reading
-
-- [Local Setup](docs/local-setup.md) — Docker, database, credentials, and run steps
-- [Infrastructure](docs/infrastructure.md) — CDK stack and downstream fan-out architecture
-- [Design Rationale](docs/design-rationale.md) — Domain model, error handling, and AOT decisions
