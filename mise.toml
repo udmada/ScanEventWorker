@@ -1,5 +1,5 @@
 [tools]
-dotnet = "10"
+"vfox:dotnet" = "10"
 hk = "latest"
 pkl = "latest"
 
