@@ -1,5 +1,6 @@
 using Amazon;
 using Amazon.SQS;
+using Microsoft.Extensions.Options;
 using ScanEventWorker.Contracts;
 using ScanEventWorker.Infrastructure.ApiClient;
 using ScanEventWorker.Infrastructure.Messaging;
@@ -71,11 +72,24 @@ builder.Services.AddSingleton<IMessageQueue>(sp =>
     new SqsMessageQueue(sp.GetRequiredService<IAmazonSQS>(), sqsQueueUrl));
 
 // Services
-builder.Services.AddSingleton<IScanEventProcessor, ScanEventProcessor>();
+builder.Services.AddSingleton<IScanEventProcessor>(sp =>
+    new ScanEventProcessor(
+        sp.GetRequiredService<IScanEventRepository>(),
+        sp.GetRequiredService<ILogger<ScanEventProcessor>>()));
 
 // Workers
-builder.Services.AddHostedService<ApiPollerWorker>();
-builder.Services.AddHostedService<EventProcessorWorker>();
+builder.Services.AddHostedService(sp =>
+    new ApiPollerWorker(
+        sp.GetRequiredService<IScanEventApiClient>(),
+        sp.GetRequiredService<IScanEventRepository>(),
+        sp.GetRequiredService<IMessageQueue>(),
+        sp.GetRequiredService<IOptions<ScanEventApiOptions>>(),
+        sp.GetRequiredService<ILogger<ApiPollerWorker>>()));
+builder.Services.AddHostedService(sp =>
+    new EventProcessorWorker(
+        sp.GetRequiredService<IMessageQueue>(),
+        sp.GetRequiredService<IScanEventProcessor>(),
+        sp.GetRequiredService<ILogger<EventProcessorWorker>>()));
 
 IHost host = builder.Build();
 

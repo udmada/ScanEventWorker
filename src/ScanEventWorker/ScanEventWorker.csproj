@@ -7,7 +7,6 @@
     <UserSecretsId>dotnet-ScanEventWorker-a630243d-36de-431f-b7cb-d29159cfb22e</UserSecretsId>
     <PublishAot>true</PublishAot>
     <IsAotCompatible>true</IsAotCompatible>
-    <NoWarn>$(NoWarn);IL2104;IL3053</NoWarn>
     <InterceptorsNamespaces>$(InterceptorsNamespaces);Dapper.AOT</InterceptorsNamespaces>
     <EnableConfigurationBindingGenerator>true</EnableConfigurationBindingGenerator>
     <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
