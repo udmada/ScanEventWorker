@@ -22,4 +22,4 @@ jobs:
     - name: amannn/action-semantic-pull-request@v6
       uses: amannn/action-semantic-pull-request@48f256284bd46cdaab1048c3721360e808335d50 # v6
     - name: jdx/mise-action@v3
-      uses: jdx/mise-action@6d1e696aa24c1aa1bcc1adea0212707c71ab78a8 # v3
+      uses: jdx/mise-action@5228313ee0372e111a38da051671ca30fc5a96db # v3
